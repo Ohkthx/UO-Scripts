@@ -1,3 +1,9 @@
+14NOV2017-3 - Fixes:
+                - UOS: Animal Taming v1.3
+                  + UOSteam doesn't support floats, so unable to tame bulls at 71.1 until 72.
+                - UOS: Cototn v1.2
+                  + Not removing object, left over play keeps serial causing you to get stuck.
+
 14NOV2017-2 - Additions:
                 - UOS: Animal Taming v1.2
 

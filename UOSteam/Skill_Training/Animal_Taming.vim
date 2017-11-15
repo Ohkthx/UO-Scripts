@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 13NOV2017       //
-// Version: 1.2                  //
+// Version: 1.3                  //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -52,6 +52,8 @@ endif
 //  v1.2                                     //
 //   + "Changes" updated.                    //
 //   + Pause added for releasing.            //
+//  v1.3                                     //
+//   + Changed "High" tier to >71 taming.    //
 //                                           //
 // Updated versions posted at:               //
 //   https://github.com/d0x1p2/UO-Scripts    //
@@ -76,7 +78,7 @@ if not @listexists 'Tames-low'
   @pushlist 'Tames-low' 0xed // Hind
   @pushlist 'Tames-low' 0xdc // Llama
 endif
-// Mid-tier tames, 62 - 71
+// Mid-tier tames, 62 - 72
 if not @listexists 'Tames-med'
   @createlist 'Tames-med'
   @pushlist 'Tames-med' 0xd6 // Panther
@@ -84,7 +86,7 @@ if not @listexists 'Tames-med'
   @pushlist 'Tames-med' 0x41 // Snow Leopard
   @pushlist 'Tames-med' 0xd5 // Polar Bear
 endif
-// High-tier tames, 71 - 100
+// High-tier tames, 72 - 100
 if not @listexists 'Tames-high'
   @createlist 'Tames-high'
   @pushlist 'Tames-high' 0x22 // White Wolf
@@ -154,7 +156,7 @@ while not dead
     endif
     // Check based on Range and Skill.
     for 0 in 'ranges_lt'
-      if skill 'Animal Taming' > 70
+      if skill 'Animal Taming' > 71
         for 0 in 'Tames-high'
           if @findtype Tames-high[] 'any' 'ground' 1 ranges_lt[]
             @setalias 'potentialTame' 'found'

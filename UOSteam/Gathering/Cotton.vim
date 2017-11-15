@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 08MAR2017       //
-// Version: 1.1                  //
+// Version: 1.2                  //
 // // // // // // // // // // // // // // // //
 // Features:                                 //
 //  + Auto-movement to nearest cotton.       //
@@ -14,8 +14,10 @@
 //   + Initial release.                      //
 //  v1.1                                     //
 //   + Added a range check to get nearest.   //
+//  v1.2                                     //
+//   + Modified removing serial.             //
 // // // // // // // // // // // // // // // //
-// Begin our fresh start in case list updates. 
+// Begin our fresh start in case list updates.
 @removelist 'cotton_types'
 @removelist 'ranges'
 @unsetalias 'cotton'
@@ -42,7 +44,7 @@ endif
 // ##  Main (Core) Loop  ##   //
 // // // // // // // // // // //
 while not dead 'self'
-// check the closest to furthest.
+  // check the closest to furthest.
   for 0 in 'ranges'
     // Iterate our cotton types.
     for 0 in 'cotton_types'
@@ -70,10 +72,10 @@ while not dead 'self'
             endif
             pause 110
           endwhile
+          pause 100
           useobject! 'cotton'
+          @unsetalias 'cotton'
         endwhile
-        // Clean up the alias.
-        @unsetalias 'cotton'
       endif
     endfor
   endfor
