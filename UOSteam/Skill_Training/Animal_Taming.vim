@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 13NOV2017       //
-// Version: 1.3                  //
+// Version: 1.4                  //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -54,6 +54,8 @@ endif
 //   + Pause added for releasing.            //
 //  v1.3                                     //
 //   + Changed "High" tier to >71 taming.    //
+//  v1.4                                     //
+//   + Additional output for clearing lists  //
 //                                           //
 // Updated versions posted at:               //
 //   https://github.com/d0x1p2/UO-Scripts    //
@@ -201,7 +203,7 @@ while not dead
   // // // // // // // // // // //
   if @findobject 'toTame'
     while not dead 'toTame'
-      // Make sure it hasn't been tamed while we've been trying.
+      // Make sure it hasnt been tamed while weve been trying.
       if @property "(tame)" 'toTame'
         headmsg "[Tamed]" Config[5] 'toTame'
         // Attempt a rename.
@@ -304,10 +306,12 @@ while not dead
   // // // // // // // // // // // // // // //
   // Clear the ignored objects (tamed)
   if timer 'clear_t' >= Config[1]
+    headmsg "[Clearing: Ignores]" Config[7] 
     @clearignorelist
     @settimer 'clear_t' 0
     // Clear the blacklisted objects.
   elseif timer 'blacklist_t' >= Config[2]
+    headmsg "[Clearing: Blacklist]" Config[7]
     @clearlist 'blacklist_lt'
     @settimer 'blacklist_t' 0
   endif

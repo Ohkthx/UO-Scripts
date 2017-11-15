@@ -1,3 +1,7 @@
+14NOV2017-4 - Additions:
+                - UOS: Animal Taming v1.4
+                  + Added additional output (when clearing lists.)
+
 14NOV2017-3 - Fixes:
                 - UOS: Animal Taming v1.3
                   + UOSteam doesn't support floats, so unable to tame bulls at 71.1 until 72.
