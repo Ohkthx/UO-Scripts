@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 13NOV2017       //
-// Version: 1.1                  //
+// Version: 1.2                  //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -39,6 +39,7 @@ endif
 //    + Ignored objects (tamed)              //
 //    + Blacklisted (unreachable.)           //
 //  + Spam message filtering.                //
+//  + Built-in Force Name change.            //
 // // // // // // // // // // // // // // // //
 // Changes:                                  //
 //  v1.0                                     //
@@ -48,6 +49,12 @@ endif
 //   + Additional 'distance_t' timers added. //
 //   + Blacklist clearing changed to 10min.  //
 //   + Bad Pathing accounted for now.        //
+//  v1.2                                     //
+//   + "Changes" updated.                    //
+//   + Pause added for releasing.            //
+//                                           //
+// Updated versions posted at:               //
+//   https://github.com/d0x1p2/UO-Scripts    //
 // // // // // // // // // // // // // // // //
 // Our fresh start, removing to be rebuilt.  //
 @clearjournal
@@ -205,6 +212,7 @@ while not dead
             waitforcontext 'toTame' 8 600
             pause 250
           endwhile
+          pause 600
           replygump 0x77565776 2
           @ignoreobject 'toTame'
           headmsg "[Released]" Config[5] 'toTame'
