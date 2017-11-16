@@ -1,3 +1,18 @@
+16NOV2017-1 - Additions:
+                - Orion: AutoBandage v1.0
+                - UOS: Animal Taming v1.5
+                  + Timeouts on potential Pre-Tame creatures that may not be tameable.
+                  + Skips Tames in Progress temporarily.
+                  + Screenshots when being attacked and when killed.
+                  + Tames no longer on "ignoreobjects" list, they're on their own.
+              Fixes:
+                - UOS: Animal Taming v1.5
+                  + Config Reogranized, made for easier expanding.
+                  + Preventing of alerting the clearing of list when lists are empty.
+                  + Checking of ALL lists for a potential tame to prevent retaming.
+                  + Exiting infinite loop when releasing added.
+                  + Player's Death breaking taming loop.
+
 14NOV2017-4 - Additions:
                 - UOS: Animal Taming v1.4
                   + Added additional output (when clearing lists.)

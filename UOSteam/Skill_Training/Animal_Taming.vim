@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 13NOV2017       //
-// Version: 1.4                  //
+// Version: 1.5                  //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -16,14 +16,29 @@ if not @listexists 'Config'
   @createlist 'Config'
   @pushlist 'Config' "ChangeMe" // Renaming name, CHANGE THIS (no spaces).
   // -------------------------- //  Change from default ("ChangeMe")
-  @pushlist 'Config' 3600000 // Clear timer, Default: 3600000 (1 Hour)
-  @pushlist 'Config' 600000 // Blacklist timer, Default: 600000 (10 Mins)
-  @pushlist 'Config' 8000 // Distance timer, Default: 8000 (8 Secs)
-  @pushlist 'Config' 3500 // Spam timer, Default: 3500 (3.5 Secs)
   @pushlist 'Config' 69 // [OK] Color, Default: 69
   @pushlist 'Config' 33 // [ERROR] Color, Default: 33
   @pushlist 'Config' 10 // [INFO] Color, Default: 10
+  @pushlist 'Config' 3600000 // Clear tames timer, Default: 3600000 (1 Hour)
+  @pushlist 'Config' 3600000 // Untameable timer, Default: 3600000 (1 Hour)
+  @pushlist 'Config' 600000 // Blacklist timer, Default: 600000 (10 Mins)
+  @pushlist 'Config' 180000 // Tame (Max) timer, Default: 180000 (3 Mins)
+  @pushlist 'Config' 60000 // Timeout timer, Default: 60000 (1 Min)
+  @pushlist 'Config' 8000 // Distance timer, Default: 8000 (8 Secs)
+  @pushlist 'Config' 3500 // Spam timer, Default: 3500 (3.5 Secs)
 endif
+// ########## EXPLAINATION OF CONFIG ##########
+// Config[0]  - What to rename the pet post-tame.
+// Config[1]  - Color of messages that indicate GOOD.
+// Config[2]  - Color of messages that indicate BAD.
+// Config[3]  - Color of messages regarding INFORMATION.
+// Config[4]  - Timer for clearing the serials of successful tames.
+// Config[5]  - Timer for clearing the serials of untameable creatures.
+// Config[6]  - Timer for clearing the serials of unreachable creatures.
+// Config[7]  - Timer for the total amount of time allowed for 1 creature.
+// Config[8]  - Timer for clearing the serials of tames in progress (by others)
+// Config[9]  - Timer for the maximum of time until determined unreachable.
+// Config[10] - Timer that limits the amount of messages we display.
 // ##########   END CONFIGURATION   ##########
 // // // // // // // // // // // // // // // //
 // Features:                                 //
@@ -36,10 +51,14 @@ endif
 //  + Prioritizes creatures based on ranges. //
 //  + Prioritizes creatures based on level.  //
 //  + Automatically clears serials of:       //
-//    + Ignored objects (tamed)              //
+//    + Tamed creatures.                     //
 //    + Blacklisted (unreachable.)           //
+//    + Tames-in-Progress.                   //
 //  + Spam message filtering.                //
 //  + Built-in Force Name change.            //
+//  + Prevention against untameable pretames //
+//  + Screenshots when being attacked.       //
+//  + Screenshots death, keep journal open!  //
 // // // // // // // // // // // // // // // //
 // Changes:                                  //
 //  v1.0                                     //
@@ -56,12 +75,22 @@ endif
 //   + Changed "High" tier to >71 taming.    //
 //  v1.4                                     //
 //   + Additional output for clearing lists  //
+//  v1.5                                     //
+//   + Ignores pre-tames after desired       //
+//      amount of time has passed.           //
+//   + Prevention on taming tames that are   //
+//      in progress.                         //
+//   + Tames are being pushed to their own   //
+//      list instead of ignorelist.          //
+//   + Screenshots the moment being attacked //
+//   + Screenshot at time of death.          //
 //                                           //
 // Updated versions posted at:               //
 //   https://github.com/d0x1p2/UO-Scripts    //
 // // // // // // // // // // // // // // // //
 // Our fresh start, removing to be rebuilt.  //
 @clearjournal
+@clearignorelist
 @removelist 'Tames-low'
 @removelist 'Tames-med'
 @removelist 'Tames-high'
@@ -70,7 +99,16 @@ endif
 // // // // // // // // // // // //
 //   ######  Lists  ######       //
 // // // // // // // // // // // //
-// ## TAMES ##
+// 'Tames-low'     - Low end mobs for taming levels below 62.
+// 'Tames-md'      - Mid end mobs for taming below 72.
+// 'Tames-high'    - High end mobs for taming above 72.
+// 'ranges_lt'     - Ranges to search for tames, closest -> furthest.
+// 'tames_lt'      - A list populated with successful tames.
+// 'blacklist_lt'  - A list populated with unreachable tames.
+// 'untameable_lt' - A list populated with pre-tames.
+// 'timeout_lt'    - A list populated with tames-in-progress by others.
+// 'counter_lt'    - Used for simple arithmetic
+// ## TAME TIERS ##
 // Low-tier tames, 50 - 62
 if not @listexists 'Tames-low'
   @createlist 'Tames-low'
@@ -98,7 +136,8 @@ if not @listexists 'Tames-high'
   @pushlist 'Tames-high' 0xea // Great Heart
   @pushlist 'Tames-high' 0x62 // Hellhound
 endif
-// ## RANGES ##
+// // // // // // //
+// ## RANGES ##   //
 // Ranges to check away from self
 if not @listexists 'ranges_lt'
   @createlist 'ranges_lt'
@@ -107,38 +146,74 @@ if not @listexists 'ranges_lt'
   @pushlist 'ranges_lt' 12
   @pushlist 'ranges_lt' 16
 endif
+// // // // // // // // // // // // // //
+// ###  LISTS FOR STORING SERIALS   ## //
+// List of successful tames.
+if not @listexists 'tames_lt'
+  @createlist 'tames_lt'
+endif
 // Blacklist of inaccessible mobs (stores serials)
 if not @listexists 'blacklist_lt'
   @createlist 'blacklist_lt'
 endif
-// // // // // //
-// ##  Timers  ##
-// Clear timer, timer for ignored objects.
-if not @timerexists 'clear_t'
-  @createtimer 'clear_t'
+// Untameables that cant quite be tamed.
+if not @listexists 'untameable_lt'
+  @createlist 'untameable_lt'
+endif
+// Timeouts, currently being tamed creatures.
+if not @listexists 'timeout_lt'
+  @createlist 'timeout_lt'
+endif
+// Counters, used for arithmetic and prevent getting stuck.
+if not @listexists 'counter_lt'
+  @createlist 'counter_lt'
+endif
+// // // // // // // // // //
+// ######  Timers  ######  //
+// // // // // // // // // //
+// 'cleartamed_t' - Counts up to when to clear tamed creature list.
+// 'untameable_t' - Counts up to when to clear pre-tamed creature list.
+// 'blacklist_t'  - Counts up to when to clear unreachable creature list.
+// 'tame_t'       - Tracks total length a tame is occuring.
+// 'timeout_t'    - Counts up to when to clear tame-in-progress by others.
+// 'distance_t'   - Tracks amount of time spent further than 1 tile away.
+// 'spam_t'       - Prevent messages from continously printing.
+// Clear tamed timer, timer for ignored objects.
+if not @timerexists 'cleartamed_t'
+  @createtimer 'cleartamed_t'
+endif
+// Untameable timer, Ignores a creature that is a pre-tame.
+if not @timerexists 'untameable_t'
+  @createtimer 'untameable_t'
 endif
 // Blacklist timer, timer for clearing blacklist.
 if not @timerexists 'blacklist_t'
   @createtimer 'blacklist_t'
 endif
+// Tame timer, amount of time we've been taming.
+if not @timerexists 'tame_t'
+  @createtimer 'tame_t'
+endif
+// Tame Timeout timer, amount of time to ignore a tame-in-progress.
+if not @timerexists 'timeout_t'
+  @createtimer 'timeout_t'
+endif
 // Distance timer, timer that determines if it is inaccessible.
 if not @timerexists 'distance_t'
   @createtimer 'distance_t'
-else
-  @settimer 'distance_t' 0
 endif
 // Spam timer, timer that determines messages timeouts.
 if not @timerexists 'spam_t'
   @createtimer 'spam_t'
 else
-  @settimer 'spam_t' Config[4]
+  @settimer 'spam_t' Config[9]
 endif
 // // // // // // // // // // // // // // // //
 // ##  Verify Default for name is Changed ## //
 // // // // // // // // // // // // // // // //
 if @inlist 'Config' "ChangeMe"
   for 3
-    headmsg "[Change Name: Line 17]" Config[6]
+    headmsg "[Change Name: Line 17]" Config[3]
   endfor
   stop
 endif
@@ -152,8 +227,8 @@ while not dead
   // Get our mob to tame. //
   // // // // // // // // //
   if not @findobject 'toTame'
-    if timer 'spam_t' >= Config[4]
-      headmsg "[Searching for Tame]" Config[7]
+    if timer 'spam_t' >= Config[9]
+      headmsg "[Searching for Tame]" Config[1]
       @settimer 'spam_t' 0
     endif
     // Check based on Range and Skill.
@@ -186,14 +261,26 @@ while not dead
       endif
       // Validate we have a potential tame.
       if @findobject 'potentialTame'
-        @settimer 'distance_t' 0
-        if not @inlist 'blacklist_lt' 'potentialTame'
+        if @inlist 'tames_lt' 'potentialTame'
+          @ignoreobject 'potentialTame'
+          @unsetalias 'potentialTame'
+        elseif @inlist 'blacklist_lt' 'potentialTame'
+          @ignoreobject 'potentialTame'
+          @unsetalias 'potentialTame'
+        elseif @inlist 'untameable_lt' 'potentialTame'
+          @ignoreobject 'potentialTame'
+          @unsetalias 'potentialTame'
+        elseif @inlist 'timeout_lt' 'potentialTame'
+          @ignoreobject 'potentialTame'
+          @unsetalias 'potentialTame'
+        else
+          @clearignorelist
+          @settimer 'tame_t' 0
+          @settimer 'distance_t' 0
           @setalias 'toTame' 'potentialTame'
           @unsetalias 'potentialTame'
-          headmsg "[Being Tamed]" Config[5] 'toTame'
+          headmsg "[Being Tamed]" Config[1] 'toTame'
           break
-        else
-          @unsetalias 'potentialTame'
         endif
       endif
     endfor
@@ -205,25 +292,31 @@ while not dead
     while not dead 'toTame'
       // Make sure it hasnt been tamed while weve been trying.
       if @property "(tame)" 'toTame'
-        headmsg "[Tamed]" Config[5] 'toTame'
+        headmsg "[Tamed]" Config[1] 'toTame'
         // Attempt a rename.
         pause 250
         @rename 'toTame' Config[0]
         pause 750
         if name 'toTame' == Config[0]
           // Tamed successfully. Release and repeat.
+          @clearlist 'counter_lt'
           while not @gumpexists 0x77565776
-            waitforcontext 'toTame' 8 600
+            waitforcontext 'toTame' 8 1000
+            if list 'counter_lt' > 5
+              @clearlist 'counter_lt'
+              break
+            endif
+            @pushlist 'counter_lt' 'toTame'
             pause 250
           endwhile
           pause 600
           replygump 0x77565776 2
-          @ignoreobject 'toTame'
-          headmsg "[Released]" Config[5] 'toTame'
+          @pushlist 'tames_lt' 'toTame'
+          headmsg "[Released]" Config[1] 'toTame'
         else
-          // Was tamed by someone else. Temporarily blacklist it.
-          if not @inlist 'blacklist_lt' 'toTame'
-            @pushlist 'blacklist_lt' 'toTame'
+          // Was tamed by someone else. Temporarily timeout it.
+          if not @inlist 'timeout_lt' 'toTame'
+            @pushlist 'timeout_lt' 'toTame'
           endif
         endif
         @unsetalias 'toTame'
@@ -240,27 +333,40 @@ while not dead
           waitfortarget 1250
           target! 'toTame'
         endif
-      elseif @injournal "too far"
         // Our target is too far, clearjournal and attempt to retame.
+      elseif @injournal "too far"
         @clearjournal
-      elseif @injournal "fail"
         // We failed, clear journal to begin retame.
+      elseif @injournal "fail"
         @clearjournal
-      elseif @injournal "cannot be seen"
         // Surface mismatch, unable to see.
+      elseif @injournal "cannot be seen"
         @clearjournal
-      elseif @injournal "a clear path"
         // Unable to get to it for some odd reason.
-        headmsg "[Bad Pathing]" Config[6] 'toTame'
+      elseif @injournal "a clear path"
         @clearjournal
+        headmsg "[Bad Pathing]" Config[2] 'toTame'
         @pushlist 'blacklist_lt' 'toTame'
         @unsetalias 'toTame'
         break
-      elseif @injournal "no chance"
-        // Can't tame this... add it to our blacklist.
-        headmsg "[Lack Skill]" Config[6] 'toTame'
+        // Tame is already occuring, timeout the tame for a few minutes.
+      elseif @injournal "already being tamed"
         @clearjournal
+        @pushlist 'timeout_lt' 'toTame'
+        @unsetalias 'toTame'
+        break
+        // Can't tame this... add it to our blacklist.
+      elseif @injournal "no chance"
+        @clearjournal
+        headmsg "[Lack Skill]" Config[2] 'toTame'
         @pushlist 'blacklist_lt' 'toTame'
+        @unsetalias 'toTame'
+        break
+      elseif @injournal "attacking you"
+        // Break off current tame, just in case.
+        @clearjournal
+        headmsg "[Being Attacked]" Config[2]
+        snapshot 100
         @unsetalias 'toTame'
         break
       endif
@@ -292,11 +398,20 @@ while not dead
       // // // // // // // // // // // // // // //
       // Check if it's taken too long to reach. //
       // // // // // // // // // // // // // // //
-      if timer 'distance_t' >= Config[3]
-        headmsg "[Unreachable]" Config[6] 'toTame'
+      if timer 'distance_t' >= Config[9]
+        headmsg "[Unreachable]" Config[2] 'toTame'
         @settimer 'distance_t' 0
         @pushlist 'blacklist_lt' 'toTame'
         @unsetalias 'toTame'
+        break
+        // Creature hasn't been tamed, Most likely a pre-tame.
+      elseif timer 'tame_t' >= Config[7]
+        headmsg "[Pre-Tame detected]" Config[2] 'toTame'
+        @settimer 'tame_t' 0
+        @pushlist 'untameable_lt' 'toTame'
+        @unsetalias 'toTame'
+        break
+      elseif dead 'self'
         break
       endif
     endwhile
@@ -305,14 +420,38 @@ while not dead
   // Check our timers, reset what we need.  //
   // // // // // // // // // // // // // // //
   // Clear the ignored objects (tamed)
-  if timer 'clear_t' >= Config[1]
-    headmsg "[Clearing: Ignores]" Config[7] 
-    @clearignorelist
-    @settimer 'clear_t' 0
-    // Clear the blacklisted objects.
-  elseif timer 'blacklist_t' >= Config[2]
-    headmsg "[Clearing: Blacklist]" Config[7]
-    @clearlist 'blacklist_lt'
+  if timer 'cleartamed_t' >= Config[4]
+    headmsg "[Clearing: Tames]" Config[3]
+    @clearlist 'tames_lt'
+    @settimer 'cleartamed_t' 0
+    // Clear the untameable creatures (pre-tames)
+  elseif timer 'untameable_t' >= Config[5]
+    if list 'untameable_lt' > 0
+      headmsg "[Clearing: Untameables]" Config[3]
+      @clearlist 'untameable_lt'
+    endif
+    @settimer 'untameable_t' 0
+    // Clear the blacklisted creatures.
+  elseif timer 'blacklist_t' >= Config[6]
+    if list 'blacklist_lt' > 0
+      headmsg "[Clearing: Blacklist]" Config[3]
+      @clearlist 'blacklist_lt'
+    endif
     @settimer 'blacklist_t' 0
+    // Clear tame in progresses
+  elseif timer 'timeout_t' >= Config[8]
+    if list 'timeout_lt' > 0
+      headmsg "[Clearing: Timeouts]" Config[3]
+      @clearlist 'timeout_lt'
+    endif
+    @settimer 'timeout_t' 0
   endif
+endwhile
+// Got here due to our death, screenshot and notify user.
+snapshot
+while dead
+  headmsg "[..:: You Died ::..]" Config[2]
+  pause 2500
+  headmsg "[Screenshot taken]" Config[2]
+  pause 2500
 endwhile
