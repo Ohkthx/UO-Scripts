@@ -17,6 +17,9 @@
 //  v1.1                                     //
 //   + Added snapshotting death and breaking //
 //    the infinite loop.                     //
+//                                           //
+// Updated versions posted at:               //
+//   https://github.com/d0x1p2/UO-Scripts    //
 // // // // // // // // // // // // // // // //
 // Selects our target and verifies it exists.
 if not @findobject 'toDiscord'

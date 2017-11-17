@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 13NOV2017       //
-// Version: 1.6                  //
+// Version: 1.7                  //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -110,7 +110,8 @@ endif
 // 'blacklist_lt'  - A list populated with unreachable tames.
 // 'untameable_lt' - A list populated with pre-tames.
 // 'timeout_lt'    - A list populated with tames-in-progress by others.
-// 'counter_lt'    - Used for simple arithmetic
+// 'counter_lt'    - Used for simple arithmetic.
+// 'secret_lt'     - Secret settings!
 // ## TAME TIERS ##
 // Low-tier tames, 50 - 62
 if not @listexists 'Tames-low'
@@ -170,6 +171,15 @@ endif
 // Counters, used for arithmetic and prevent getting stuck.
 if not @listexists 'counter_lt'
   @createlist 'counter_lt'
+endif
+// Secret settings! Comment out with '//' what to disable.
+@removelist 'secret_lt'
+if not @listexists 'secret_lt'
+  @createlist 'secret_lt'
+  //@pushlist 'secret_lt' "afk"  // Alerts of a AFK gump, requires 'alert.wav'
+  //  -  -  -  -  -  -  -  -  -  //  Can be found at the link in "Changes" at
+  //  -  -  -  -  -  -  -  -  -  //  the top, place 'alert.wav' in your
+  //  -  -  -  -  -  -  -  -  -  //  Steam/Sounds/ folder for it to work.
 endif
 // // // // // // // // // //
 // ######  Timers  ######  //
@@ -402,6 +412,17 @@ while not dead
         pause 110
       else
         @settimer 'distance_t' 0
+      endif
+      // // // // // // // // //
+      // ### ALERT SYSTEM ### //
+      // // // // // // // // //
+      if @inlist 'secret_lt' "afk"
+        if @gumpexists 0x7c04fbbf
+          headmsg "[AFK Check]" Config[2]
+          playsound "alert.wav"
+          while @gumpexists 0x7c04fbbf
+          endwhile
+        endif
       endif
       // // // // // // // // // // // // // // //
       // Check if it's taken too long to reach. //

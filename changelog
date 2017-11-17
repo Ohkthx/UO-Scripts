@@ -1,7 +1,10 @@
-17NOV2017-1 - Addtions:
+17NOV2017-2 - Additions: 
+                - 'alert.wav' added, will be used by various scripts.
+
+17NOV2017-1 - Additions:
                 - UOS: Provocation v1.1
-                
-16NOV2017-2 - Additionals:
+
+16NOV2017-2 - Additions:
                 - UOS: Animal Taming v1.6
                   + Additional checks to seeing if the creature can be renamed.
 
