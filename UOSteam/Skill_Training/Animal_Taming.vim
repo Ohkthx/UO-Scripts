@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 13NOV2017       //
-// Version: 1.5                  //
+// Version: 1.6                  //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -84,6 +84,9 @@ endif
 //      list instead of ignorelist.          //
 //   + Screenshots the moment being attacked //
 //   + Screenshot at time of death.          //
+//  v1.6                                     //
+//   + Additional checks on if it can be     //
+//     renamed.                              //
 //                                           //
 // Updated versions posted at:               //
 //   https://github.com/d0x1p2/UO-Scripts    //
@@ -295,8 +298,13 @@ while not dead
         headmsg "[Tamed]" Config[1] 'toTame'
         // Attempt a rename.
         pause 250
-        @rename 'toTame' Config[0]
-        pause 750
+        for 5
+          @rename 'toTame' Config[0]
+          if name 'toTame' == Config[0]
+            break
+          endif
+          pause 200
+        endfor
         if name 'toTame' == Config[0]
           // Tamed successfully. Release and repeat.
           @clearlist 'counter_lt'
