@@ -1,3 +1,9 @@
+18NOV2017-1 - Fixes:
+                - UOS: Animal Taming v1.8 -> 2 Major fixes to prevent AFK Gump appearing as often.
+                 + Additional error message for a tame in progress added.
+                 + Resolved small issue with "Cannot be seen" not being detected.
+
+
 17NOV2017-2 - Additions: 
                 - 'alert.wav' added, will be used by various scripts.
 

@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 13NOV2017       //
-// Version: 1.7                  //
+// Version: 1.8                  //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -87,6 +87,12 @@ endif
 //  v1.6                                     //
 //   + Additional checks on if it can be     //
 //     renamed.                              //
+//  v1.8                                     //
+//   + Added better timeoutting on cretures  //
+//    that are unreachable.                  //
+//   + Added an additional check for tames   //
+//    that are currently in progress.        //
+//  [Both additions cut down on AFK Checks]  //
 //                                           //
 // Updated versions posted at:               //
 //   https://github.com/d0x1p2/UO-Scripts    //
@@ -176,7 +182,7 @@ endif
 @removelist 'secret_lt'
 if not @listexists 'secret_lt'
   @createlist 'secret_lt'
-  //@pushlist 'secret_lt' "afk"  // Alerts of a AFK gump, requires 'alert.wav'
+  //@pushlist 'secret_lt' "afk"  // Alerts of an AFK gump, requires 'alert.wav'
   //  -  -  -  -  -  -  -  -  -  //  Can be found at the link in "Changes" at
   //  -  -  -  -  -  -  -  -  -  //  the top, place 'alert.wav' in your
   //  -  -  -  -  -  -  -  -  -  //  Steam/Sounds/ folder for it to work.
@@ -352,7 +358,8 @@ while not dead
           target! 'toTame'
         endif
         // Our target is too far, clearjournal and attempt to retame.
-      elseif @injournal "too far"
+      endif
+      if @injournal "too far"
         @clearjournal
         // We failed, clear journal to begin retame.
       elseif @injournal "fail"
@@ -360,6 +367,10 @@ while not dead
         // Surface mismatch, unable to see.
       elseif @injournal "cannot be seen"
         @clearjournal
+        headmsg "[Bad Pathing]" Config[2] 'toTame'
+        @pushlist 'blacklist_lt' 'toTame'
+        @unsetalias 'toTame'
+        break
         // Unable to get to it for some odd reason.
       elseif @injournal "a clear path"
         @clearjournal
@@ -369,6 +380,13 @@ while not dead
         break
         // Tame is already occuring, timeout the tame for a few minutes.
       elseif @injournal "already being tamed"
+        @clearjournal
+        headmsg "[Tame in Progress]" Config[2] 'toTame'
+        @pushlist 'timeout_lt' 'toTame'
+        @unsetalias 'toTame'
+        break
+      elseif @injournal "already taming this"
+        headmsg "[Tame in Progress]" Config[2] 'toTame'
         @clearjournal
         @pushlist 'timeout_lt' 'toTame'
         @unsetalias 'toTame'
@@ -421,6 +439,10 @@ while not dead
           headmsg "[AFK Check]" Config[2]
           playsound "alert.wav"
           while @gumpexists 0x7c04fbbf
+          endwhile
+        elseif @gumpexists 0x6ec0aab
+          replygump 0x6ec0aab 1
+          while @gumpexists 0x6ec0aab
           endwhile
         endif
       endif
@@ -477,7 +499,7 @@ while not dead
   endif
 endwhile
 // Got here due to our death, screenshot and notify user.
-snapshot
+snapshot 1000
 while dead
   headmsg "[..:: You Died ::..]" Config[2]
   pause 2500
