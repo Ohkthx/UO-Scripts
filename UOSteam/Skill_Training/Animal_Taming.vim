@@ -1,7 +1,7 @@
-// // // // // // // // // // // //
-// Created by: Schism (d0x1p2)   //
-// Date created: 13NOV2017       //
-// Version: 1.8                  //
+// // // // // // // // // // // // //
+// Created by: Schism (d0x1p2)      //
+// Date created: 13NOV2017          //
+// Version: 1.9                     //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -327,9 +327,12 @@ while not dead
           while not @gumpexists 0x77565776
             waitforcontext 'toTame' 8 1000
             if list 'counter_lt' > 5
+              // Counter's size has grown larger than we allow.
+              //  so we break to prevent an infinite loop and being stuck.
               @clearlist 'counter_lt'
               break
             endif
+            // Increase counter's size by 1 per iteration.
             @pushlist 'counter_lt' 'toTame'
             pause 250
           endwhile
@@ -357,8 +360,8 @@ while not dead
           waitfortarget 1250
           target! 'toTame'
         endif
-        // Our target is too far, clearjournal and attempt to retame.
       endif
+      // Our target is too far, clearjournal and attempt to retame.
       if @injournal "too far"
         @clearjournal
         // We failed, clear journal to begin retame.
@@ -444,6 +447,9 @@ while not dead
           replygump 0x6ec0aab 1
           while @gumpexists 0x6ec0aab
           endwhile
+          // Reset timers to prevent ignoring after gump.
+          @settimer 'tame_t' 0
+          @settimer 'distance_t' 0
         endif
       endif
       // // // // // // // // // // // // // // //

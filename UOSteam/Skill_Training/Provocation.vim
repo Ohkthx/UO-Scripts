@@ -48,11 +48,11 @@ while not dead
   //Select an instrument automatically to use.
   if not @findobject 'instrument' 'any' 'backpack'
     for 0 to 'instrumentlist'
-      while @findtype instrumentlist[]
+      if @findtype instrumentlist[]
         @setalias 'instrument' 'found'
         useobject 'instrument'
         break
-      endwhile
+      endif
     endfor
   endif
   // Keep running until instrument is destroyed.
