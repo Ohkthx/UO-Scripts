@@ -1,3 +1,9 @@
+21NOV2017-2 - Fixes:
+                - UOS: Animal Taming v1.10
+                  + Added 2 additional checks for:
+                    + Tame that occured while attempting to tame.
+                    + Too many owners- can't be tamed.
+
 21NOV2017-1 - Additions:
                 - UOS: CottonFlax v1.3
                  + Picks both cotton and flax and not properly uses ranges.

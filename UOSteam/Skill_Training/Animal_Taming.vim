@@ -1,7 +1,7 @@
-// // // // // // // // // // // // //
-// Created by: Schism (d0x1p2)      //
-// Date created: 13NOV2017          //
-// Version: 1.9                     //
+// // // // // // // // // // // //
+// Created by: Schism (d0x1p2)   //
+// Date created: 13NOV2017       //
+// Version: 1.10                 //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -92,7 +92,12 @@ endif
 //    that are unreachable.                  //
 //   + Added an additional check for tames   //
 //    that are currently in progress.        //
-//  [Both additions cut down on AFK Checks]  //
+//   [Both cut down on AFK Checks]           //
+//  v1.10                                    //
+//   + Added a check for potentially tamed   //
+//    mobs before another tame check.        //
+//   + Added a check for the message:        //
+//     "too many owners"
 //                                           //
 // Updated versions posted at:               //
 //   https://github.com/d0x1p2/UO-Scripts    //
@@ -394,11 +399,23 @@ while not dead
         @pushlist 'timeout_lt' 'toTame'
         @unsetalias 'toTame'
         break
+      elseif @injournal "looks tame"
+        headmsg "[Tamed Already]" Config[2] 'toTame'
+        @clearjournal
+        @pushlist 'blacklist_lt' 'toTame'
+        @unsetalias 'toTame'
+        break
         // Can't tame this... add it to our blacklist.
       elseif @injournal "no chance"
         @clearjournal
         headmsg "[Lack Skill]" Config[2] 'toTame'
         @pushlist 'blacklist_lt' 'toTame'
+        @unsetalias 'toTame'
+        break
+      elseif @injournal "too many"
+        @clearjournal
+        headmsg "[Too Many Owners]" Config[2] 'toTame'
+        @pushlist 'untameable_lt' 'toTame'
         @unsetalias 'toTame'
         break
       elseif @injournal "attacking you"
