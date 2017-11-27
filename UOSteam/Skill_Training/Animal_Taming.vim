@@ -1,7 +1,7 @@
 // // // // // // // // // // // //
 // Created by: Schism (d0x1p2)   //
 // Date created: 13NOV2017       //
-// Version: 1.10                 //
+// Version: 1.11                 //
 // // // // // // // // // // // // // // // //
 // Notes:                                    //
 //  + Change line 17s "ChangeMe" to a new    //
@@ -16,16 +16,17 @@ if not @listexists 'Config'
   @createlist 'Config'
   @pushlist 'Config' "ChangeMe" // Renaming name, CHANGE THIS (no spaces).
   // -------------------------- //  Change from default ("ChangeMe")
-  @pushlist 'Config' 69 // [OK] Color, Default: 69
-  @pushlist 'Config' 33 // [ERROR] Color, Default: 33
-  @pushlist 'Config' 10 // [INFO] Color, Default: 10
+  @pushlist 'Config' 69   // [OK] Color, Default: 69
+  @pushlist 'Config' 33   // [ERROR] Color, Default: 33
+  @pushlist 'Config' 10   // [INFO] Color, Default: 10
   @pushlist 'Config' 3600000 // Clear tames timer, Default: 3600000 (1 Hour)
   @pushlist 'Config' 3600000 // Untameable timer, Default: 3600000 (1 Hour)
-  @pushlist 'Config' 600000 // Blacklist timer, Default: 600000 (10 Mins)
-  @pushlist 'Config' 180000 // Tame (Max) timer, Default: 180000 (3 Mins)
-  @pushlist 'Config' 60000 // Timeout timer, Default: 60000 (1 Min)
-  @pushlist 'Config' 8000 // Distance timer, Default: 8000 (8 Secs)
-  @pushlist 'Config' 3500 // Spam timer, Default: 3500 (3.5 Secs)
+  @pushlist 'Config' 600000  // Blacklist timer, Default: 600000 (10 Mins)
+  @pushlist 'Config' 180000  // Tame (Max) timer, Default: 180000 (3 Mins)
+  @pushlist 'Config' 60000   // Timeout timer, Default: 60000 (1 Min)
+  @pushlist 'Config' 8000    // Distance timer, Default: 8000 (8 Secs)
+  @pushlist 'Config' 3500    // Spam timer, Default: 3500 (3.5 Secs)
+  @pushlist 'Config' 900000  // AFK skill timeout, Default: 900000 (15 Mins)
 endif
 // ########## EXPLAINATION OF CONFIG ##########
 // Config[0]  - What to rename the pet post-tame.
@@ -39,6 +40,7 @@ endif
 // Config[8]  - Timer for clearing the serials of tames in progress (by others)
 // Config[9]  - Timer for the maximum of time until determined unreachable.
 // Config[10] - Timer that limits the amount of messages we display.
+// Config[11] - Timer that dictates how long you will pause for AFK failing.
 // ##########   END CONFIGURATION   ##########
 // // // // // // // // // // // // // // // //
 // Features:                                 //
@@ -97,7 +99,10 @@ endif
 //   + Added a check for potentially tamed   //
 //    mobs before another tame check.        //
 //   + Added a check for the message:        //
-//     "too many owners"
+//     "too many owners"                     //
+//  v1.11                                    //
+//   + Added a timer for pausing for failing //
+//    the AFK check.                         //
 //                                           //
 // Updated versions posted at:               //
 //   https://github.com/d0x1p2/UO-Scripts    //
@@ -202,6 +207,7 @@ endif
 // 'timeout_t'    - Counts up to when to clear tame-in-progress by others.
 // 'distance_t'   - Tracks amount of time spent further than 1 tile away.
 // 'spam_t'       - Prevent messages from continously printing.
+// 'afkfail_t'    - Counter for waiting after failing an AFK check.
 // Clear tamed timer, timer for ignored objects.
 if not @timerexists 'cleartamed_t'
   @createtimer 'cleartamed_t'
@@ -231,6 +237,12 @@ if not @timerexists 'spam_t'
   @createtimer 'spam_t'
 else
   @settimer 'spam_t' Config[9]
+endif
+// AFK fail timer, timer that waits until you can use a skill.
+if not @timerexists 'afkfail_t'
+  @createtimer 'afkfail_t'
+else
+  @settimer 'afkfail_t' 0
 endif
 // // // // // // // // // // // // // // // //
 // ##  Verify Default for name is Changed ## //
@@ -464,9 +476,26 @@ while not dead
           replygump 0x6ec0aab 1
           while @gumpexists 0x6ec0aab
           endwhile
+          @clearjournal
+          // Pause for the duration of the AFK timeout.
+          @settimer 'afkfail_t' 0
+          while timer 'afkfail_t' < Config[11]
+            headmsg "[Paused: Failed Check]" Config[2]
+            pause 10000
+          endwhile
           // Reset timers to prevent ignoring after gump.
           @settimer 'tame_t' 0
           @settimer 'distance_t' 0
+        elseif @injournal "blocked from using"
+          @clearjournal
+          // Pause for the duration of the AFK timeout.
+          @settimer 'afkfail_t' 0
+          while timer 'afkfail_t' < Config[11]
+            headmsg "[Paused: Failed Check]" Config[2]
+            pause 10000
+          endwhile
+          @unsetalias 'toTame'
+          break
         endif
       endif
       // // // // // // // // // // // // // // //

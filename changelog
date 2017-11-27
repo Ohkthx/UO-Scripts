@@ -1,3 +1,8 @@
+26NOV2017-1 - Additions:
+                - UOS: Animal Taming v1.11
+                  + Pauses if skill is locked by AFK Check failing.
+                  + Timer is customized in 'Config'
+
 21NOV2017-3 - Additions:
                 - UOS: Cotton/Flax to Bolts v1.0
 
