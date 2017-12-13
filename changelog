@@ -1,3 +1,7 @@
+12DEC2017-1 - Additions:
+                - UOS: Provocation Types v1.0
+                  + Provocates two targets based on their types.
+
 28NOV2017-1 - Additions:
                 - UOS: Provocation Nearest v1.0
                   + Get the nearest two targets and provocates them.
